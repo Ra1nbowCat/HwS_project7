@@ -10,23 +10,13 @@ import UIKit
 class ViewController: UITableViewController {
     
     var petitions = [Petition]()
-    
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return petitions.count
-    }
-    
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        let petition = petitions[indexPath.row]
-        cell.textLabel?.text = petition.title
-        cell.detailTextLabel?.text = petition.body
-        return cell 
-    }
+    var urlString: String!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let urlString: String
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Credits", style: .plain, target: self, action: #selector(showCredits))
+        
         
         if navigationController?.tabBarItem.tag == 0 {
             urlString = "https://www.hackingwithswift.com/samples/petitions-1.json"
@@ -48,6 +38,18 @@ class ViewController: UITableViewController {
         ac.addAction(UIAlertAction(title: "ok", style: .default))
         present(ac, animated: true)
     }
+    
+    @objc func showCredits() {
+        if let unwrappedUrl = urlString {
+            let ac = UIAlertController(title: "Credits", message: "\(unwrappedUrl)", preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "ok", style: .default))
+            present(ac, animated: true)
+        } else {
+            let ac = UIAlertController(title: "Credits", message: "error", preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "ok", style: .default))
+            present(ac, animated: true)
+        }
+    }
 
     func parse(json: Data) {
         let decoder = JSONDecoder()
@@ -62,6 +64,18 @@ class ViewController: UITableViewController {
         let vc = DetailViewController()
         vc.detailItem = petitions[indexPath.row]
         navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return petitions.count
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+        let petition = petitions[indexPath.row]
+        cell.textLabel?.text = petition.title
+        cell.detailTextLabel?.text = petition.body
+        return cell
     }
 
 }
