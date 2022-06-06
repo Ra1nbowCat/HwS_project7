@@ -11,11 +11,16 @@ class ViewController: UITableViewController {
     
     var petitions = [Petition]()
     var urlString: String!
+    var filteredPetitions = [Petition]()
+    var clearPetitions = [Petition]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Credits", style: .plain, target: self, action: #selector(showCredits))
+        let filterButton = UIBarButtonItem(title: "Filter", style: .plain, target: self, action: #selector(find))
+        let refreshButton = UIBarButtonItem(barButtonSystemItem: .refresh, target: self, action: #selector(refresh))
+        navigationItem.leftBarButtonItems = [filterButton, refreshButton]
         
         
         if navigationController?.tabBarItem.tag == 0 {
@@ -50,12 +55,42 @@ class ViewController: UITableViewController {
             present(ac, animated: true)
         }
     }
+    
+    @objc func refresh() {
+        petitions = clearPetitions
+        tableView.reloadData()
+    }
+    
+    @objc func find() {
+        let ac = UIAlertController(title: "Filter publications", message: nil, preferredStyle: .alert)
+        ac.addTextField()
+        let submitAction = UIAlertAction(title: "Submit", style: .default) {
+            [weak self, weak ac] _ in
+            guard let answer = ac?.textFields?[0].text else { return }
+            self!.submit(answer: answer)
+        }
+        
+        ac.addAction(submitAction)
+        present(ac, animated: true)
+    }
+    
+    func submit(answer: String) {
+        filteredPetitions.removeAll()
+        for petition in petitions {
+            if petition.title.contains(answer) || petition.body.contains(answer) {
+                filteredPetitions.append(petition)
+            }
+        }
+        petitions = filteredPetitions
+        tableView.reloadData()
+    }
 
     func parse(json: Data) {
         let decoder = JSONDecoder()
         
         if let jsonPetitions = try? decoder.decode(Petitions.self, from: json) {
             petitions = jsonPetitions.results
+            clearPetitions = petitions
             tableView.reloadData()
         }
     }
